@@ -1,0 +1,17 @@
+[package]
+name = "starknet-sequencer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+base64 = "0.21.2"
+bincode = "1.3.3"
+log = "0.4.0"
+jsonrpsee = { version="0.18.2", features = ["server", "macros"] }
+serde_json = { version = "1.0.96", default-features = false }
+serde = "1.0.164"
+cairo-felt = "0.8.0"
+serde_with = "3.0.0"
+starknet-core = "0.8.0"
+tokio = { version = "1.5.0", features = ["sync", "rt", "macros"] }
+
