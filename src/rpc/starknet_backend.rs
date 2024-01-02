@@ -3,24 +3,38 @@ use crate::rpc::{
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
     ContractClass, DeclareTransactionResult, DeployAccountTransactionResult, EventFilterWithPage,
     EventsPage, FeeEstimate, FunctionCall, InvokeTransactionResult, MaybePendingBlockWithTxHashes,
-    MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate,
-    SyncStatusType, Transaction,
+    MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate, SyncStatusType,
+    Transaction,
 };
 use cairo_felt::Felt252;
-use jsonrpsee::
-    core::{async_trait, RpcResult};
-use starknet_core::types::{TransactionStatus, SimulatedTransaction, SimulationFlag};
+use jsonrpsee::{
+    core::{async_trait, RpcResult},
+    types::{error::ErrorCode, ErrorObject},
+};
+use starknet_core::types::{SimulatedTransaction, SimulationFlag, TransactionStatus};
+use starknet_in_rust::{
+    state::{
+        cached_state::CachedState, contract_class_cache::PermanentContractClassCache,
+        in_memory_state_reader::InMemoryStateReader, state_api::StateReader,
+    },
+    utils::Address,
+};
 
 use super::StarknetRpcApiServer;
+
+type StarknetState = CachedState<InMemoryStateReader, PermanentContractClassCache>;
 
 pub struct StarknetBackend {
     // mempool_handler: Mempool,
     // store: Store,
+    state: StarknetState,
 }
 
 impl StarknetBackend {
     pub fn new() -> StarknetBackend {
-        StarknetBackend {}
+        StarknetBackend {
+            state: Default::default(),
+        }
     }
 }
 
@@ -34,7 +48,6 @@ impl StarknetRpcApiServer for StarknetBackend {
     fn get_transaction_status(&self, transaction_hash: FeltParam) -> RpcResult<TransactionStatus> {
         unimplemented!()
     }
-
 
     /// Returns the execution trace of a transaction by simulating it in the runtime.
     async fn simulate_transactions(
@@ -75,9 +88,12 @@ impl StarknetRpcApiServer for StarknetBackend {
         &self,
         contract_address: FeltParam,
         key: FeltParam,
-        block_id: BlockId,
+        _block_id: BlockId,
     ) -> RpcResult<Felt252> {
-        unimplemented!();
+        let address = Address(contract_address.0);
+        self.state
+            .get_storage_at(&(address, key.0.to_be_bytes()))
+            .map_err(|_| ErrorObject::from(ErrorCode::InternalError))
     }
 
     fn call(&self, request: FunctionCall, block_id: BlockId) -> RpcResult<Vec<String>> {
@@ -87,10 +103,17 @@ impl StarknetRpcApiServer for StarknetBackend {
     /// Get the contract class at a given contract address for a given block id
     fn get_class_at(
         &self,
-        block_id: BlockId,
+        _block_id: BlockId,
         contract_address: FeltParam,
     ) -> RpcResult<ContractClass> {
-        unimplemented!();
+        let address = Address(contract_address.0);
+        let classhash = self
+            .state
+            .get_class_hash_at(&address)
+            .map_err(|_| ErrorObject::from(ErrorCode::InternalError))?;
+        self.state
+            .get_contract_class(&classhash)
+            .map_err(|_| ErrorObject::from(ErrorCode::InternalError))
     }
 
     /// Get the contract class hash in the given block for the contract deployed at the given
@@ -182,7 +205,7 @@ impl StarknetRpcApiServer for StarknetBackend {
     async fn get_events(&self, filter: EventFilterWithPage) -> RpcResult<EventsPage> {
         unimplemented!();
     }
-/// Add an Invoke Transaction to invoke a contract function
+    /// Add an Invoke Transaction to invoke a contract function
     ///
     /// # Arguments
     ///
