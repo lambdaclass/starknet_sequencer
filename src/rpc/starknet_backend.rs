@@ -13,6 +13,7 @@ use jsonrpsee::{
 };
 use starknet_core::types::{SimulatedTransaction, SimulationFlag, TransactionStatus};
 use starknet_in_rust::{
+    services::api::contract_classes::compiled_class::CompiledClass,
     state::{
         cached_state::CachedState, contract_class_cache::PermanentContractClassCache,
         in_memory_state_reader::InMemoryStateReader, state_api::StateReader,
@@ -111,9 +112,18 @@ impl StarknetRpcApiServer for StarknetBackend {
             .state
             .get_class_hash_at(&address)
             .map_err(|_| ErrorObject::from(ErrorCode::InternalError))?;
-        self.state
+        let contract_class = self
+            .state
             .get_contract_class(&classhash)
-            .map_err(|_| ErrorObject::from(ErrorCode::InternalError))
+            .map_err(|_| ErrorObject::from(ErrorCode::InternalError))?;
+
+        match contract_class {
+            CompiledClass::Deprecated(_) => {
+                todo!()
+            }
+            CompiledClass::Casm(_) => todo!(),
+            CompiledClass::Sierra(_) => todo!(),
+        }
     }
 
     /// Get the contract class hash in the given block for the contract deployed at the given
