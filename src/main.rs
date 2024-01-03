@@ -4,6 +4,7 @@ use rpc::starknet_backend::StarknetBackend;
 use crate::rpc::StarknetRpcApiServer;
 
 mod rpc;
+mod store;
 
 #[tokio::main]
 async fn main() {
