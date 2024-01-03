@@ -1,6 +1,7 @@
 use cairo_felt::Felt252;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::{serde_as, DeserializeAs, SerializeAs};
+use starknet_core::types::FieldElement;
 
 // We need the newtype in order to be able to use it the RPC function signatures since
 // jsonrpsee uses serde's deserialize implementations to deserialize params and
@@ -13,6 +14,15 @@ pub struct FeltHex;
 pub struct FeltHexOption;
 pub struct FeltPendingBlockHash;
 pub(crate) struct NumAsHex;
+
+pub fn to_felt252(field_element: FieldElement) -> Felt252 {
+    return Felt252::from_bytes_be(&field_element.to_bytes_be());
+}
+
+pub fn to_field_element(felt252: Felt252) -> FieldElement {
+    return FieldElement::from_bytes_be(&felt252.to_be_bytes()).expect("Could not convert Felt252 to FieldElement");
+}
+
 
 impl SerializeAs<Felt252> for FeltHex {
     fn serialize_as<S>(value: &Felt252, serializer: S) -> Result<S::Ok, S::Error>

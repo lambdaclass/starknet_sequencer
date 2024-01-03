@@ -7,12 +7,13 @@
 use cairo_felt::Felt252;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::proc_macros::rpc;
-use starknet_core::types::{
+pub use starknet_core::types::{
     BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
     BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass, DeclareTransactionResult,
     DeployAccountTransactionResult, EventFilterWithPage, EventsPage, FeeEstimate, FunctionCall,
     InvokeTransactionResult, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingTransactionReceipt,
-    StateUpdate, SyncStatusType, Transaction, TransactionStatus, SimulationFlag, SimulatedTransaction
+    StateUpdate, SyncStatusType, Transaction, TransactionStatus, SimulationFlag, SimulatedTransaction,
+    InvokeTransaction, TransactionReceipt, InvokeTransactionV1,
 };
 
 // #[serde_as]

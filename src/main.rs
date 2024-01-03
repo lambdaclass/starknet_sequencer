@@ -4,6 +4,9 @@ use rpc::starknet_backend::StarknetBackend;
 use crate::rpc::StarknetRpcApiServer;
 
 mod rpc;
+mod store;
+
+const DB_PATH: &str = "store";
 
 #[tokio::main]
 async fn main() {
@@ -24,7 +27,7 @@ pub async fn start_rpc_server(port: u16) -> Result<ServerHandle, jsonrpsee::core
     let server = ServerBuilder::default()
         .build(format!("0.0.0.0:{}", port))
         .await?;
-    let server_handle = server.start(StarknetBackend::new().into_rpc())?;
+    let server_handle = server.start(StarknetBackend::new(DB_PATH).into_rpc())?;
 
     Ok(server_handle)
 }
