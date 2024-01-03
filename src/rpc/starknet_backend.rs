@@ -6,6 +6,7 @@ use crate::rpc::{
     MaybePendingBlockWithTxs, MaybePendingTransactionReceipt, StateUpdate,
     SyncStatusType, Transaction,
 };
+use crate::store::{Store, EngineType};
 use cairo_felt::Felt252;
 use jsonrpsee::
     core::{async_trait, RpcResult};
@@ -15,12 +16,16 @@ use super::StarknetRpcApiServer;
 
 pub struct StarknetBackend {
     // mempool_handler: Mempool,
-    // store: Store,
+    store: Store,
 }
 
 impl StarknetBackend {
-    pub fn new() -> StarknetBackend {
-        StarknetBackend {}
+    pub fn new(store: &str) -> StarknetBackend {
+
+        let store_path = format!("db_{}", store);
+        StarknetBackend {
+            store: Store::new(&store_path, EngineType::Sled).expect("Failed to create sequencer store"),
+        }
     }
 }
 
@@ -59,7 +64,7 @@ impl StarknetRpcApiServer for StarknetBackend {
     }
 
     fn block_number(&self) -> RpcResult<u64> {
-        Ok(1024u64)
+        Ok(self.store.get_height().expect("Heigh not found"))
     }
 
     fn block_hash_and_number(&self) -> RpcResult<BlockHashAndNumber> {
