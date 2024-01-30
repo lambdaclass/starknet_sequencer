@@ -20,6 +20,7 @@ use starknet_core::types::{
 // pub struct Felt(#[serde_as(as = "UfeHex")] pub Felt252);
 pub mod serializable_types;
 pub mod starknet_backend;
+pub mod transactions;
 
 use self::serializable_types::FeltParam;
 
